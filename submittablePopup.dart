@@ -69,14 +69,19 @@ class PopupRoute extends ModalRoute {
   bool get opaque => false;
 }
 
+
 class Popup extends StatefulWidget {
   Popup({
+    this.decoration,
     Widget? title, 
     Widget? content, 
     this.submitButton
   }) : 
     this.content = content ?? Container(),
     this.title = title ?? Container();
+
+  /// Decoration of popup container
+  final Decoration? decoration;
 
   /// Widget wich is shown at the top of popup
   /// 
@@ -96,6 +101,7 @@ class Popup extends StatefulWidget {
         daddy: this
       );
 }
+
 
 class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
   _PopupState({
@@ -149,9 +155,9 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
       );
 
   Widget get _titleWidget => Container(
-        child: _daddy.title,
-        margin: EdgeInsets.only(bottom: 10),
-      );
+    child: _daddy.title,
+    margin: EdgeInsets.only(bottom: 10),
+  );
 
   List<Widget> get _popUpContent {
     if (_daddy.submitButton != null) {
@@ -164,9 +170,10 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Transform.translate(
-        offset: Offset(0, _animation!.value),
-        child: Dialog(
-            child: Container(
+      offset: Offset(0, _animation!.value),
+      child: Dialog(
+        child: Container(
+          decoration: _daddy.decoration,
           width: _width,
           child: Padding(
             padding: EdgeInsets.fromLTRB(20, 25, 20, 7),
@@ -176,8 +183,8 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
               children: _popUpContent,
             ),
           ),
-        )));
+        )
+      )
+    );
   }
 }
-
-
