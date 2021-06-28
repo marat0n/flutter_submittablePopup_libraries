@@ -75,7 +75,8 @@ class Popup extends StatefulWidget {
     this.decoration,
     Widget? title, 
     Widget? content, 
-    this.submitButton
+    this.submitButton,
+    this.closeButtonStyle,
   }) : 
     this.content = content ?? Container(),
     this.title = title ?? Container();
@@ -96,10 +97,13 @@ class Popup extends StatefulWidget {
   /// Submit button is shown between [content] and [closeButton]
   final SubmitButton? submitButton;
 
+  /// Style of [closeButton]
+  final ButtonStyle? closeButtonStyle;
+
   @override
   State<StatefulWidget> createState() => _PopupState(
-        daddy: this
-      );
+    daddy: this
+  );
 }
 
 
@@ -129,43 +133,47 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
         setState(() {});
       });
 
-    _animation = Tween(begin: _animationStartPoint, end: _animationEndPoint)
-        .animate(_animationController!);
+    _animation = Tween(
+      begin: _animationStartPoint,
+      end: _animationEndPoint
+    ).animate(_animationController!);
+
     _animationController!.forward();
   }
 
   Widget get _closeButton => Container(
-        width: _width,
-        alignment: AlignmentDirectional.center,
-        child: Padding(
-          padding: EdgeInsets.only(top: 5, bottom: 5),
-          child: TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Container(
-                width: _width,
-                alignment: AlignmentDirectional.center,
-                child: Icon(
-                  Icons.close,
-                  size: 28,
-                ),
-              )),
-        ),
-      );
+    width: _width,
+    alignment: AlignmentDirectional.center,
+    child: Padding(
+      padding: EdgeInsets.only(top: 5, bottom: 5),
+      child: TextButton(
+        style: _daddy.closeButtonStyle,
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        child: Container(
+          width: _width,
+          alignment: AlignmentDirectional.center,
+          child: Icon(
+            Icons.close,
+            size: 28,
+          ),
+        )
+      ),
+    ),
+  );
 
   Widget get _titleWidget => Container(
     child: _daddy.title,
     margin: EdgeInsets.only(bottom: 10),
   );
 
-  List<Widget> get _popUpContent {
-    if (_daddy.submitButton != null) {
-      return [_titleWidget, _daddy.content, _daddy.submitButton ?? Container(), _closeButton];
-    }
-
-    return [_titleWidget, _daddy.content, _closeButton];
-  }
+  List<Widget> get _popUpContent => [
+    _titleWidget,
+    _daddy.content,
+    _daddy.submitButton ?? Container(),
+    _closeButton
+  ];
 
   @override
   Widget build(BuildContext context) {
