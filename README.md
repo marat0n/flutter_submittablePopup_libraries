@@ -5,14 +5,51 @@ ____
 
 Just call `showPopup(BuildContext, Popup)`
 ____
-Code exaple:
+Code exaples:
 ```dart
 showPopup(
-  context,
-  Popup(
+  context: context,
+  popup: Popup(
     title: Text("Title"),
     content: Text("Content"),
-    SubmitButton()
+  )
+);
+```
+
+```dart
+showPopup(
+  context: context,
+  popup: Popup(
+    position: PopupPosition.bottom,
+    widthType: PopupWidthType.full,
+    title: Text("Title"),
+    content: Text("Content"),
+    submitButton: SubmitButton(),
+  )
+);
+```
+
+```dart
+showPopup(
+  context: context,
+  popup: Popup(
+    decoration: BoxDecoration(
+      color: Colors.amber[100],
+      border: Border.all(
+        color: Color(0xFF1565C0),
+        width: 1.5
+      )
+    ),
+    closeButtonStyle: ButtonStyle(
+      backgroundColor: MaterialStateProperty.all(Color(0xFFFF5722))
+    ),
+    content: Text("Content"),
+    submitButton: SubmitButton(
+      onPressed: () {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("snackBar")));
+      },
+      canCloseCheck: () => false,
+    )
   )
 );
 ```
