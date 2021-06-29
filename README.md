@@ -5,7 +5,7 @@ ____
 
 Just call `showPopup(BuildContext, Popup)`
 ____
-Code exaples:
+Code examples:
 ```dart
 showPopup(
   context: context,
