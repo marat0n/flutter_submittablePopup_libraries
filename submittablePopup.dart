@@ -70,6 +70,17 @@ class PopupRoute extends ModalRoute {
 }
 
 
+enum PopupPosition {
+  center,
+  bottom
+}
+
+enum PopupWidthType {
+  full,
+  medium
+}
+
+
 class Popup extends StatefulWidget {
   Popup({
     this.decoration,
@@ -77,9 +88,17 @@ class Popup extends StatefulWidget {
     Widget? content, 
     this.submitButton,
     this.closeButtonStyle,
+    PopupPosition position = PopupPosition.center,
+    this.widthType = PopupWidthType.medium,
   }) : 
     this.content = content ?? Container(),
-    this.title = title ?? Container();
+    this.title = title ?? Container(),
+    this.position = (() {
+      if (position == PopupPosition.center) {
+        return MainAxisAlignment.center;
+      }
+      return MainAxisAlignment.end;
+    })();
 
   /// Decoration of popup container
   final Decoration? decoration;
@@ -100,6 +119,16 @@ class Popup extends StatefulWidget {
   /// Style of [closeButton]
   final ButtonStyle? closeButtonStyle;
 
+  /// Vertical position of popup
+  final MainAxisAlignment position;
+
+  /// Type of popup width
+  /// 
+  /// [PopupWidthType.full] is `100%` of screen width
+  /// 
+  /// [PopupWidthType.medium] is minimal value of `500` independent pixels and `70%` of screen width
+  final PopupWidthType widthType;
+
   @override
   State<StatefulWidget> createState() => _PopupState(
     daddy: this
@@ -114,13 +143,34 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
 
   final Popup _daddy;
 
-  double get _width => min(MediaQuery.of(context).size.width * 0.7, 500);
+  double get _width {
+    if (_daddy.widthType == PopupWidthType.medium) {
+      double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+      return min(
+        MediaQuery.of(context).size.width * 0.7, 
+        500 / devicePixelRatio
+      );
+    }
+    return MediaQuery.of(context).size.width;
+  } 
 
   late AnimationController? _animationController;
   late Animation<double>? _animation;
 
-  double _animationStartPoint = -30;
-  double _animationEndPoint = 40;
+  double get _animationStartPoint {
+    double value = 30;
+    if (_daddy.position == MainAxisAlignment.end) {
+      return value;
+    }
+    return -value;
+  }
+  double get _animationEndPoint {
+    double value = 40;
+    if (_daddy.position == MainAxisAlignment.end) {
+      return 0;
+    }
+    return value;
+  }
 
   @override
   void initState() {
@@ -177,22 +227,29 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Transform.translate(
-      offset: Offset(0, _animation!.value),
-      child: Dialog(
-        child: Container(
-          decoration: _daddy.decoration,
-          width: _width,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(20, 25, 20, 7),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: _popUpContent,
-            ),
-          ),
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: _daddy.position,
+      children: [
+        Transform.translate(
+          offset: Offset(0, _animation!.value),
+          child: Dialog(
+            insetPadding: EdgeInsets.zero,
+            child: Container(
+              decoration: _daddy.decoration,
+              width: _width,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(20, 25, 20, 7),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _popUpContent,
+                ),
+              ),
+            )
+          )
         )
-      )
+      ],
     );
   }
 }
