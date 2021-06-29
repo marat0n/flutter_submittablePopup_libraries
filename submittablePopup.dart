@@ -70,13 +70,19 @@ class PopupRoute extends ModalRoute {
 }
 
 
+/// Vertical position of popup
 enum PopupPosition {
+  /// Center of screen
   center,
+  /// Bottom of screen
   bottom
 }
 
+/// Type of popup width
 enum PopupWidthType {
+  /// `100%` of screen width
   full,
+  /// `70%` of screen width (maximal value - `500` independent pixels)
   medium
 }
 
@@ -126,7 +132,7 @@ class Popup extends StatefulWidget {
   /// 
   /// [PopupWidthType.full] is `100%` of screen width
   /// 
-  /// [PopupWidthType.medium] is minimal value of `500` independent pixels and `70%` of screen width
+  /// [PopupWidthType.medium] is `70%` of screen width (maximal value - `500` independent pixels)
   final PopupWidthType widthType;
 
   @override
