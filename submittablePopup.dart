@@ -37,8 +37,11 @@ class PopupRoute extends ModalRoute {
   final RoutePageBuilder _pageBuilder;
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation) {
+  Widget buildPage(
+      BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation
+    ) {
     return Semantics(
       child: _pageBuilder(context, animation, secondaryAnimation),
       scopesRoute: true,
@@ -90,7 +93,7 @@ enum PopupWidthType {
 class Popup extends StatefulWidget {
   Popup({
     this.decoration,
-    Widget? title, 
+    this.title, 
     Widget? content, 
     this.submitButton,
     this.closeButtonStyle,
@@ -98,7 +101,6 @@ class Popup extends StatefulWidget {
     this.widthType = PopupWidthType.medium,
   }) : 
     this.content = content ?? Container(),
-    this.title = title ?? Container(),
     this.position = (() {
       if (position == PopupPosition.center) {
         return MainAxisAlignment.center;
@@ -112,7 +114,7 @@ class Popup extends StatefulWidget {
   /// Widget wich is shown at the top of popup
   /// 
   /// Default value is [new Container()]
-  final Widget title;
+  final Widget? title;
 
   /// Content widget is shown in the popup center
   /// 
@@ -219,10 +221,15 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
     ),
   );
 
-  Widget get _titleWidget => Container(
-    child: _daddy.title,
-    margin: EdgeInsets.only(bottom: 10),
-  );
+  Widget get _titleWidget {
+    if (_daddy.title != null) {
+      return Container(
+        child: _daddy.title,
+        margin: EdgeInsets.only(bottom: 10),
+      );
+    }
+    return Container();
+  } 
 
   List<Widget> get _popUpContent => [
     _titleWidget,
