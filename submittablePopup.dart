@@ -108,8 +108,22 @@ class Popup extends StatefulWidget {
       return MainAxisAlignment.end;
     })();
 
+  BoxDecoration get defaultDecoration {
+    if (position == MainAxisAlignment.end) {
+      return BoxDecoration(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(5),
+          bottom: Radius.zero
+        )
+      );
+    }
+    return BoxDecoration(
+      borderRadius: BorderRadius.all(Radius.circular(5)),
+    );
+  }
+
   /// Decoration of popup container
-  final Decoration? decoration;
+  final BoxDecoration? decoration;
 
   /// Widget wich is shown at the top of popup
   /// 
@@ -246,19 +260,34 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
       children: [
         Transform.translate(
           offset: Offset(0, _animation!.value),
-          child: Dialog(
-            insetPadding: EdgeInsets.zero,
+          child: Material(
+            borderRadius: _daddy.decoration?.borderRadius ?? _daddy.defaultDecoration.borderRadius,
             child: Container(
-              decoration: _daddy.decoration,
-              width: _width,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(20, 25, 20, 7),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: _popUpContent,
-                ),
-              ),
+              decoration: _daddy.decoration ?? _daddy.defaultDecoration,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        decoration: _daddy.decoration,
+                        width: _width,
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(20, 25, 20, 7),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: _popUpContent,
+                          ),
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              )
             )
           )
         )
