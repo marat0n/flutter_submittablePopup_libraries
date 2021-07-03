@@ -13,63 +13,8 @@ void showPopup({
   }) {
     showDialog(
       context: context, 
-      builder: (contect) => popup
+      builder: (context) => popup
     );
-}
-
-class PopupRoute extends ModalRoute {
-  PopupRoute({
-    RoutePageBuilder? pageBuilder,
-    bool barrierDismissible = true,
-    Color barrierColor = const Color(0x80000000),
-    String? barrierLabel,
-    Duration transitionDuration = const Duration(milliseconds: 200),
-    RouteTransitionsBuilder? transitionBuilder,
-    RouteSettings? settings,
-  }) : 
-    _pageBuilder = pageBuilder!,
-    _barrierDismissible = barrierDismissible,
-    _barrierLabel = barrierLabel!,
-    _barrierColor = barrierColor,
-    _transitionDuration = transitionDuration,
-    super(settings: settings);
-
-  final RoutePageBuilder _pageBuilder;
-
-  @override
-  Widget buildPage(
-      BuildContext context,
-      Animation<double> animation,
-      Animation<double> secondaryAnimation
-    ) {
-    return Semantics(
-      child: _pageBuilder(context, animation, secondaryAnimation),
-      scopesRoute: true,
-      explicitChildNodes: true,
-    );
-  }
-
-  @override
-  bool get barrierDismissible => _barrierDismissible;
-  final bool _barrierDismissible;
-
-  @override
-  String get barrierLabel => _barrierLabel;
-  final String _barrierLabel;
-
-  @override
-  Color get barrierColor => _barrierColor;
-  final Color _barrierColor;
-
-  @override
-  Duration get transitionDuration => _transitionDuration;
-  final Duration _transitionDuration;
-
-  @override
-  bool get maintainState => true;
-
-  @override
-  bool get opaque => false;
 }
 
 
@@ -89,16 +34,27 @@ enum PopupWidthType {
   medium
 }
 
+/// Direction of [submitButton] and [closeButton]
+enum PopupButtonsDirection {
+  /// Buttons are displayed in a column
+  vertical,
+  /// Buttons are displayed in a row
+  horizontal,
+}
+
 
 class Popup extends StatefulWidget {
   Popup({
     this.decoration,
+    PopupPosition position = PopupPosition.center,
+    this.widthType = PopupWidthType.medium,
     this.title, 
     Widget? content, 
     this.submitButton,
     this.closeButtonStyle,
-    PopupPosition position = PopupPosition.center,
-    this.widthType = PopupWidthType.medium,
+    this.closeButtonText = const Text(""),
+    this.buttonsDirection = PopupButtonsDirection.vertical,
+    this.buttonsAreReversed = false,
   }) : 
     this.content = content ?? Container(),
     this.position = (() {
@@ -108,22 +64,20 @@ class Popup extends StatefulWidget {
       return MainAxisAlignment.end;
     })();
 
-  BoxDecoration get defaultDecoration {
-    if (position == MainAxisAlignment.end) {
-      return BoxDecoration(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(5),
-          bottom: Radius.zero
-        )
-      );
-    }
-    return BoxDecoration(
-      borderRadius: BorderRadius.all(Radius.circular(5)),
-    );
-  }
 
   /// Decoration of popup container
   final BoxDecoration? decoration;
+
+  /// Vertical position of popup
+  final MainAxisAlignment position;
+
+  /// Type of popup width
+  /// 
+  /// [PopupWidthType.full] is `100%` of screen width
+  /// 
+  /// [PopupWidthType.medium] is `70%` of screen width 
+  /// (maximal value - `500` independent pixels)
+  final PopupWidthType widthType;
 
   /// Widget wich is shown at the top of popup
   /// 
@@ -141,15 +95,37 @@ class Popup extends StatefulWidget {
   /// Style of [closeButton]
   final ButtonStyle? closeButtonStyle;
 
-  /// Vertical position of popup
-  final MainAxisAlignment position;
+  /// Text that is shown in [closeButton]
+  final Text closeButtonText;
 
-  /// Type of popup width
-  /// 
-  /// [PopupWidthType.full] is `100%` of screen width
-  /// 
-  /// [PopupWidthType.medium] is `70%` of screen width (maximal value - `500` independent pixels)
-  final PopupWidthType widthType;
+  /// Direction of [submitButton] and [closeButton]
+  final PopupButtonsDirection? buttonsDirection;
+
+  /// if value is `true` [submitButton] would be placed 
+  /// at the end of popup.
+  /// if value is `false` [submitButton] would be 
+  /// placed at the usual position.
+  final bool buttonsAreReversed;
+
+  BoxDecoration get defaultDecoration {
+    BoxDecoration result;
+    Radius defaultRadius = Radius.circular(10);
+
+    if (position == MainAxisAlignment.end) {
+      result = BoxDecoration(
+        borderRadius: BorderRadius.vertical(
+          top: defaultRadius,
+          bottom: Radius.zero
+        )
+      );
+    } else {
+      result = BoxDecoration(
+        borderRadius: BorderRadius.all(defaultRadius),
+      );
+    }
+
+    return result;
+  }
 
   @override
   State<StatefulWidget> createState() => _PopupState(
@@ -162,20 +138,37 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
   _PopupState({
     required Popup daddy
   }) : _daddy = daddy;
+  
+  @override
+  void initState() {
+    super.initState();
 
+    initAnimation();
+  }
+
+  /* POPUP */
   final Popup _daddy;
 
-  double get _width {
+  double get _popupWidth {
+    double result;
+    double fullWidth = MediaQuery.of(context).size.width;
+
     if (_daddy.widthType == PopupWidthType.medium) {
       double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
-      return min(
-        MediaQuery.of(context).size.width * 0.7, 
+      result = min(
+        fullWidth * 0.7, 
         500 / devicePixelRatio
       );
+    } else {
+      result = fullWidth;
     }
-    return MediaQuery.of(context).size.width;
-  } 
 
+    result -= _daddy.decoration?.border?.dimensions.horizontal ?? 0;
+    return result;
+  }
+  
+
+  /* ANIMATION */
   late AnimationController? _animationController;
   late Animation<double>? _animation;
 
@@ -194,10 +187,7 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
     return value;
   }
 
-  @override
-  void initState() {
-    super.initState();
-
+  void initAnimation() {
     _animationController = new AnimationController(
       duration: Duration(milliseconds: 200),
       vsync: this,
@@ -213,8 +203,21 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
     _animationController!.forward();
   }
 
+
+  /* BUTTONS */
+  double get _buttonsWidth {
+    double widthDivisioner;
+    if (_daddy.buttonsDirection == PopupButtonsDirection.horizontal) {
+      widthDivisioner = 2;
+    } else {
+      widthDivisioner = 1;
+    }
+
+    return (_popupWidth / widthDivisioner) - 20;
+  }
+
   Widget get _closeButton => Container(
-    width: _width,
+    width: _buttonsWidth,
     alignment: AlignmentDirectional.center,
     child: Padding(
       padding: EdgeInsets.only(top: 5, bottom: 5),
@@ -224,17 +227,54 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
           Navigator.pop(context);
         },
         child: Container(
-          width: _width,
-          alignment: AlignmentDirectional.center,
-          child: Icon(
-            Icons.close,
-            size: 28,
-          ),
+          width: _buttonsWidth,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Icon(
+                Icons.close,
+                size: 28,
+              ),
+              _daddy.closeButtonText,
+            ],
+          )
         )
       ),
     ),
   );
 
+  Flex get _buttons {
+    Axis direction;
+    if (_daddy.buttonsDirection == PopupButtonsDirection.horizontal) {
+      direction = Axis.horizontal;
+    } else {
+      direction = Axis.vertical;
+    }
+
+    List<Widget> buttons = [
+      Container(
+        width: _buttonsWidth,
+        child: _daddy.submitButton ?? Container(),
+      ),
+      Container(
+        width: _buttonsWidth,
+        child: _closeButton,
+      )
+    ];
+
+    if (_daddy.buttonsAreReversed) {
+      buttons = buttons.reversed.toList();
+    }
+
+    return Flex(
+      direction: direction,
+      children: buttons,
+    );
+  }
+
+
+  /* CONTENT */
   Widget get _titleWidget {
     if (_daddy.title != null) {
       return Container(
@@ -243,13 +283,12 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
       );
     }
     return Container();
-  } 
+  }
 
   List<Widget> get _popUpContent => [
     _titleWidget,
     _daddy.content,
-    _daddy.submitButton ?? Container(),
-    _closeButton
+    _buttons,
   ];
 
   @override
@@ -261,7 +300,8 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
         Transform.translate(
           offset: Offset(0, _animation!.value),
           child: Material(
-            borderRadius: _daddy.decoration?.borderRadius ?? _daddy.defaultDecoration.borderRadius,
+            borderRadius: _daddy.decoration?.borderRadius ?? 
+                          _daddy.defaultDecoration.borderRadius,
             child: Container(
               decoration: _daddy.decoration ?? _daddy.defaultDecoration,
               child: Row(
@@ -270,11 +310,10 @@ class _PopupState extends State<Popup> with SingleTickerProviderStateMixin {
                 children: [
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: MainAxisSize.max,
                     children: [
                       Container(
-                        decoration: _daddy.decoration,
-                        width: _width,
+                        width: _popupWidth,
                         child: Padding(
                           padding: EdgeInsets.fromLTRB(20, 25, 20, 7),
                           child: Column(

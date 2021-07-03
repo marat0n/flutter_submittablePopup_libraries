@@ -34,22 +34,73 @@ showPopup(
   context: context,
   popup: Popup(
     decoration: BoxDecoration(
-      color: Colors.amber[100],
+      borderRadius: BorderRadius.all(Radius.circular(30)),
       border: Border.all(
-        color: Color(0xFF1565C0),
-        width: 1.5
-      )
+        color: Colors.blueAccent,
+        width: 5,
+      ),
+      color: Colors.deepPurple[600],
     ),
-    closeButtonStyle: ButtonStyle(
-      backgroundColor: MaterialStateProperty.all(Color(0xFFFF5722))
+    title: Container(
+      alignment: Alignment.center,
+      child: Text(
+        "Title",
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 50,
+        ),
+      ),
     ),
-    content: Text("Content"),
+    content: Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [Text("Row1")],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [Text("Row2")],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [Text("Row3")],
+        ),
+      ],
+    ),
     submitButton: SubmitButton(
+      text: "Click me!",
+      icon: Icon(Icons.chevron_right),
       onPressed: () {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("snackBar")));
+        showPopup(
+          context: context, 
+          popup: Popup(
+            position: PopupPosition.bottom,
+            widthType: PopupWidthType.full,
+            content: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Close me!",
+                  style: TextStyle(
+                    fontSize: 30,
+                  ),
+                ),
+              ],
+            )
+          )
+        );
       },
       canCloseCheck: () => false,
-    )
+    ),
+    closeButtonStyle: ButtonStyle(
+      backgroundColor: MaterialStateProperty.all<Color>(Colors.pink),
+    ),
+    buttonsDirection: PopupButtonsDirection.horizontal,
+    widthType: PopupWidthType.medium,
   )
 );
 ```

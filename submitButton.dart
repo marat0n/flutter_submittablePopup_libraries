@@ -47,6 +47,13 @@ class _SubmitButtonState extends State<SubmitButton> {
   
   SubmitButton _daddy;
 
+  List<Widget> get content {
+    if (_daddy.icon != null) {
+      return [_daddy.icon!, Text(_daddy.text)];
+    }
+    return [Text(_daddy.text)];
+  }
+
   @override
   Widget build(BuildContext context) => Padding(
     padding: EdgeInsets.only(top: 10, bottom: 10),
@@ -58,9 +65,13 @@ class _SubmitButtonState extends State<SubmitButton> {
         _daddy.onPressed();
       },
       child: Container(
-        width: null,
+        width: _daddy.width,
         alignment: AlignmentDirectional.center,
-        child: Text(_daddy.text),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: content,
+        ),
       )
     ),
   );
